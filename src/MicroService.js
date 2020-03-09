@@ -1,10 +1,10 @@
-const nanoid = require('nanoid');
-const BaseApp = require('./BaseApp');
-const RabbitApp = require('./RabbitApp');
-const Response = require('./Response');
-const Server = require('./Server');
-const { isRpcAction, parseRabbitMessage } = require('./utils');
-const debug = require('./utils/debug')('micromq-microservice');
+const nanoid = require("nanoid");
+const BaseApp = require("./BaseApp");
+const RabbitApp = require("./RabbitApp");
+const Response = require("./Response");
+const Server = require("./Server");
+const { isRpcAction, parseRabbitMessage } = require("./utils");
+const debug = require("./utils/debug")("micromq-microservice");
 
 class MicroService extends BaseApp {
   constructor(options) {
@@ -13,13 +13,16 @@ class MicroService extends BaseApp {
     this._requests = new Map();
 
     if (options.microservices && options.microservices.length) {
-      this._microservices = options.microservices.reduce((object, name) => ({
-        ...object,
-        [name]: new RabbitApp({
-          rabbit: options.rabbit,
-          name,
+      this._microservices = options.microservices.reduce(
+        (object, name) => ({
+          ...object,
+          [name]: new RabbitApp({
+            rabbit: options.rabbit,
+            name
+          })
         }),
-      }), {});
+        {}
+      );
     }
   }
 
@@ -33,20 +36,20 @@ class MicroService extends BaseApp {
     const connection = await this.createConnection();
 
     await Promise.all(
-      Object.values(this._microservices).map(async (microservice) => {
+      Object.values(this._microservices).map(async microservice => {
         // reuse current microservice connection
         microservice.connection = connection;
 
         const [channel] = await Promise.all([
           microservice.createChannelByPid({
-            autoDelete: true,
+            autoDelete: true
           }),
 
           // prepare requests channel for this.ask
-          microservice.createRequestsChannel(),
+          microservice.createRequestsChannel()
         ]);
 
-        channel.consume(microservice.queuePidName, (message) => {
+        channel.consume(microservice.queuePidName, message => {
           const json = parseRabbitMessage(message);
 
           if (!json) {
@@ -56,14 +59,17 @@ class MicroService extends BaseApp {
           }
 
           const { response, statusCode, requestId } = json;
-          const { resolve } = this._requests.get(requestId);
+          const request = this._requests.get(requestId);
 
-          resolve({ status: statusCode, response });
+          if (request) {
+            const { resolve } = request;
+            resolve({ status: statusCode, response });
 
-          this._requests.delete(requestId);
-          channel.ack(message);
+            this._requests.delete(requestId);
+            channel.ack(message);
+          }
         });
-      }),
+      })
     );
 
     this._consumersReady = true;
@@ -88,11 +94,16 @@ class MicroService extends BaseApp {
 
     const channel = await microservice.createRequestsChannel();
 
-    await channel.sendToQueue(microservice.requestsQueueName, Buffer.from(JSON.stringify({
-      ...query,
-      requestId,
-      queue: microservice.queuePidName,
-    })));
+    await channel.sendToQueue(
+      microservice.requestsQueueName,
+      Buffer.from(
+        JSON.stringify({
+          ...query,
+          requestId,
+          queue: microservice.queuePidName
+        })
+      )
+    );
 
     return promise;
   }
@@ -100,7 +111,7 @@ class MicroService extends BaseApp {
   listen(port) {
     const server = new Server();
 
-    server.all('(.*)', async (req, res) => {
+    server.all("(.*)", async (req, res) => {
       req.app = this;
       res.app = this;
 
@@ -118,7 +129,7 @@ class MicroService extends BaseApp {
     // prepare responses channel before consume
     await this.createResponsesChannel();
 
-    requestsChannel.consume(this.requestsQueueName, async (message) => {
+    requestsChannel.consume(this.requestsQueueName, async message => {
       const json = parseRabbitMessage(message);
 
       if (!json) {
