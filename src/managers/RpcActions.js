@@ -11,6 +11,14 @@ class RpcActions {
     const { action, meta } = req.server;
     const handler = this._actions.get(action);
 
+    console.warn("=======action======");
+    console.warn(action);
+    console.warn("=============");
+
+    console.warn("=======handler======");
+    console.warn(handler);
+    console.warn("=============");
+
     if (!handler) {
       console.warn(`Action "${action}" not found`);
 
