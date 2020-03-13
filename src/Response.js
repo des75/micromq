@@ -1,4 +1,4 @@
-const debug = require('./utils/debug')('micromq-response');
+const debug = require("./utils/debug")("micromq-response");
 
 class Response {
   constructor(responsesChannel, responsesQueueName, requestId) {
@@ -13,19 +13,27 @@ class Response {
   _send(response) {
     this.response = response;
 
-    debug(() => `sending response to ${this._responsesQueueName}: ${JSON.stringify({
-      response,
-      statusCode: this.statusCode,
-      headers: this.headers,
-      requestId: this._requestId,
-    })}`);
+    debug(
+      () =>
+        `sending response to ${this._responsesQueueName}: ${JSON.stringify({
+          response,
+          statusCode: this.statusCode,
+          headers: this.headers,
+          requestId: this._requestId
+        })}`
+    );
 
-    this._responsesChannel.sendToQueue(this._responsesQueueName, Buffer.from(JSON.stringify({
-      response,
-      statusCode: this.statusCode,
-      headers: this.headers,
-      requestId: this._requestId,
-    })));
+    this._responsesChannel.sendToQueue(
+      this._responsesQueueName,
+      Buffer.from(
+        JSON.stringify({
+          response,
+          statusCode: this.statusCode,
+          headers: this.headers,
+          requestId: this._requestId
+        })
+      )
+    );
   }
 
   status(statusCode) {
@@ -50,7 +58,7 @@ class Response {
   json(response) {
     this.writeHead(this.statusCode, {
       ...this.headers,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json"
     });
     this._send(response);
 

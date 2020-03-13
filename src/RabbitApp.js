@@ -1,9 +1,11 @@
-const amqplib = require('amqplib');
-const debug = require('./utils/debug')('micromq-rabbit');
+const nanoid = require("nanoid");
+const amqplib = require("amqplib");
+const debug = require("./utils/debug")("micromq-rabbit");
 
 class RabbitApp {
   constructor(options) {
     this.options = options;
+    this.id = nanoid();
 
     this.requestsQueueName = `${this.options.name}:requests`;
     this.responsesQueueName = `${this.options.name}:responses`;
@@ -18,16 +20,16 @@ class RabbitApp {
   }
 
   get queuePidName() {
-    return `${this.responsesQueueName}-${process.pid}`;
+    return `${this.responsesQueueName}-${this.id}`;
   }
 
   async createConnection() {
     if (!this.connection) {
-      debug(() => 'creating connection');
+      debug(() => "creating connection");
 
       this.connection = await amqplib.connect(this.options.rabbit.url);
 
-      ['error', 'close'].forEach((event) => {
+      ["error", "close"].forEach(event => {
         this.connection.on(event, () => {
           this.connection = null;
           this.createConnection();
