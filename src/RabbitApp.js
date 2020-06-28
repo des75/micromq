@@ -4,6 +4,7 @@ const debug = require("./utils/debug")("micromq-rabbit");
 
 class RabbitApp {
   constructor(options) {
+    this.backoff = 1000
     this.options = options;
     this.id = nanoid();
 
@@ -24,17 +25,31 @@ class RabbitApp {
   }
 
   async createConnection() {
+    debug(() => "[MicroMQ] trying to connect...");
+
     if (!this.connection) {
       debug(() => "creating connection");
 
-      this.connection = await amqplib.connect(this.options.rabbit.url);
+      try {
+        this.connection = await amqplib.connect(this.options.rabbit.url);
 
-      ["error", "close"].forEach(event => {
-        this.connection.on(event, () => {
+        debug(() => "[MicroMQ] connected");
+        this.backoff = 1000;
+
+        ["error", "close"].forEach(event => {
+          this.connection.on(event, () => {
+            this.connection = null;
+            this.createConnection();
+          });
+        });
+
+      } catch(e) {
+        setTimeout(() => {
+          this.backoff *= 2;
           this.connection = null;
           this.createConnection();
-        });
-      });
+        }, this.backoff)
+      }
     }
 
     return this.connection;
