@@ -26,6 +26,11 @@ class MicroService extends BaseApp {
     }
   }
 
+  onConnectionReady() {
+    this._consumersReady = false
+    this.start()
+  }
+
   async _startConsumers() {
     if (this._consumersStarting) {
       return;

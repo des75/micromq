@@ -24,6 +24,10 @@ class RabbitApp {
     return `${this.responsesQueueName}-${this.id}`
   }
 
+  onConnectionReady() {
+
+  }
+
   async createConnection () {
     debug(() => '[MicroMQ] trying to connect...')
 
@@ -48,10 +52,14 @@ class RabbitApp {
         setTimeout(() => {
           this.backoff *= 2
           this.connection = null
+          this.closeChannels()
+          
           this.createConnection()
         }, this.backoff)
       }
     }
+
+    this.onConnectionReady()
 
     return this.connection
   }
