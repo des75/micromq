@@ -4,6 +4,7 @@ const debug = require('./utils/debug')('micromq-rabbit')
 
 class RabbitApp {
   constructor (options) {
+    this.app = options.app
     this.backoff = 1000
     this.options = options
     this.id = nanoid()
@@ -27,6 +28,8 @@ class RabbitApp {
   onConnectionRestarted() {
     this.connection = null
     this.closeChannels()
+
+    this.app.onConnectionDown()
   }
 
   async createConnection () {
