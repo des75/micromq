@@ -26,7 +26,7 @@ class RabbitApp {
   }
 
   onConnectionDown() {
-    debug(() => '[MicroMQ] connection lost...')
+    console.log('[MicroMQ] connection lost...')
     this.connection = null
     this.closeChannels()
 
