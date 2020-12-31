@@ -51,8 +51,7 @@ class RabbitApp {
       } catch (e) {
         setTimeout(() => {
           this.backoff *= 2
-          this.connection = null
-          this.createConnection()
+          this.onConnectionDown()
         }, this.backoff)
       }
     }
