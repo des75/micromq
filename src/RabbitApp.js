@@ -26,6 +26,7 @@ class RabbitApp {
   }
 
   onConnectionRestarted() {
+    debug(() => '[MicroMQ] connection lost...')
     this.connection = null
     this.closeChannels()
 
@@ -47,7 +48,6 @@ class RabbitApp {
         [('error', 'close')].forEach(event => {
           this.connection.on(event, () => {
             this.onConnectionRestarted()
-            this.createConnection()
           })
         })
       } catch (e) {
@@ -78,7 +78,7 @@ class RabbitApp {
     } catch (e) {
       setTimeout(() => {
         this.backoff *= 2
-        createChannel(queueName, options)
+        this.createChannel(queueName, options)
       }, this.backoff)
     }
   }
