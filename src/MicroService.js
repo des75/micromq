@@ -30,6 +30,7 @@ class MicroService extends BaseApp {
     super.onConnectionRestarted()
 
     this._consumersReady = false
+    this._consumersStarting = false
     this.start()
   }
 
