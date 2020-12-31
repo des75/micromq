@@ -25,7 +25,7 @@ class RabbitApp {
     return `${this.responsesQueueName}-${this.id}`
   }
 
-  onConnectionDown() {
+  onConnectionDown () {
     console.log('[MicroMQ] connection lost...')
     this.connection = null
     this.closeChannels()
@@ -43,9 +43,7 @@ class RabbitApp {
         this.connection = await amqplib.connect(this.options.rabbit.url)
 
         debug(() => '[MicroMQ] connected')
-        this.backoff = (1000)
-        
-        [('error', 'close')].forEach(event => {
+        this.backoff = (1000)[('error', 'close')].forEach(event => {
           this.connection.on(event, () => {
             this.onConnectionDown()
           })
@@ -53,7 +51,7 @@ class RabbitApp {
       } catch (e) {
         setTimeout(() => {
           this.backoff *= 2
-          this.connection = null          
+          this.connection = null
           this.createConnection()
         }, this.backoff)
       }
@@ -88,9 +86,11 @@ class RabbitApp {
     if (!this.responsesChannel) {
       this.responsesChannel = await this.createChannel(this.responsesQueueName)
 
-      this.responsesChannel.on('close', () => {
-        this.onConnectionDown()
-        this.responsesChannel = null
+      [('error', 'close')].forEach(event => {
+        this.responsesChannel.on(event, () => {
+          this.onConnectionDown()
+          this.responsesChannel = null
+        })
       })
     }
 
@@ -101,9 +101,11 @@ class RabbitApp {
     if (!this.requestsChannel) {
       this.requestsChannel = await this.createChannel(this.requestsQueueName)
 
-      this.requestsChannel.on('close', () => {
-        this.onConnectionDown()
-        this.requestsChannel = null
+      [('error', 'close')].forEach(event => {
+        this.requestsChannel.on(event, () => {
+          this.onConnectionDown()
+          this.requestsChannel = null
+        })
       })
     }
 
@@ -113,20 +115,27 @@ class RabbitApp {
   async createChannelByPid (options) {
     if (!this.pidChannel) {
       this.pidChannel = await this.createChannel(this.queuePidName, options)
-
-      this.pidChannel.on('close', () => {
-        this.onConnectionDown()
-        this.pidChannel = null
+      [('error', 'close')].forEach(event => {
+        this.pidChannel.on(event, () => {
+          this.onConnectionDown()
+          this.pidChannel = null
+        })
       })
     }
 
     return this.pidChannel
   }
 
-  closeChannels() {
-    if (this.responsesChannel) { this.responsesChannel.close() }
-    if (this.requestsChannel) { this.requestsChannel.close() }
-    if (this.pidChannel) { this.pidChannel.close() }
+  closeChannels () {
+    if (this.responsesChannel) {
+      this.responsesChannel.close()
+    }
+    if (this.requestsChannel) {
+      this.requestsChannel.close()
+    }
+    if (this.pidChannel) {
+      this.pidChannel.close()
+    }
   }
 }
 
