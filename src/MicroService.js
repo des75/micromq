@@ -26,7 +26,9 @@ class MicroService extends BaseApp {
     }
   }
 
-  onConnectionReady() {
+  onConnectionRestarted() {
+    super.onConnectionRestarted()
+
     this._consumersReady = false
     this.start()
   }

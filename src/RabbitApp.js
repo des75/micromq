@@ -24,8 +24,8 @@ class RabbitApp {
     return `${this.responsesQueueName}-${this.id}`
   }
 
-  onConnectionReady() {
-
+  onConnectionRestarted() {
+    this.closeChannels()
   }
 
   async createConnection () {
@@ -43,23 +43,18 @@ class RabbitApp {
         [('error', 'close')].forEach(event => {
           this.connection.on(event, () => {
             this.connection = null
-            this.closeChannels()
-
-            this.createConnection()
+            await this.createConnection()
+            this.onConnectionRestarted()
           })
         })
       } catch (e) {
         setTimeout(() => {
           this.backoff *= 2
-          this.connection = null
-          this.closeChannels()
-          
+          this.connection = null          
           this.createConnection()
         }, this.backoff)
       }
     }
-
-    this.onConnectionReady()
 
     return this.connection
   }
