@@ -44,7 +44,7 @@ class RabbitApp {
         [('error', 'close')].forEach(event => {
           this.connection.on(event, () => {
             this.onConnectionRestarted()
-            // this.createConnection()
+            this.createConnection()
           })
         })
       } catch (e) {
