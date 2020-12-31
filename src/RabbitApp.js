@@ -25,6 +25,7 @@ class RabbitApp {
   }
 
   onConnectionRestarted() {
+    this.connection = null
     this.closeChannels()
   }
 
@@ -42,9 +43,8 @@ class RabbitApp {
         
         [('error', 'close')].forEach(event => {
           this.connection.on(event, () => {
-            this.connection = null
-            await this.createConnection()
             this.onConnectionRestarted()
+            // this.createConnection()
           })
         })
       } catch (e) {
