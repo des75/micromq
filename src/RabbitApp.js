@@ -44,8 +44,8 @@ class RabbitApp {
 
         debug(() => '[MicroMQ] connected')
         this.backoff = 1000
-        
-        ['error', 'close'].forEach(event => {
+
+        ;['error', 'close'].forEach(event => {
           this.connection.on(event, () => {
             this.onConnectionDown()
           })
@@ -86,7 +86,7 @@ class RabbitApp {
   async createResponsesChannel () {
     if (!this.responsesChannel) {
       this.responsesChannel = await this.createChannel(this.responsesQueueName)
-      ['error', 'close'].forEach(event => {
+      ;['error', 'close'].forEach(event => {
         this.responsesChannel.on(event, () => {
           this.onConnectionDown()
           this.responsesChannel = null
@@ -100,7 +100,7 @@ class RabbitApp {
   async createRequestsChannel () {
     if (!this.requestsChannel) {
       this.requestsChannel = await this.createChannel(this.requestsQueueName)
-      ['error', 'close'].forEach(event => {
+      ;['error', 'close'].forEach(event => {
         this.requestsChannel.on(event, () => {
           this.onConnectionDown()
           this.requestsChannel = null
@@ -114,8 +114,8 @@ class RabbitApp {
   async createChannelByPid (options) {
     if (!this.pidChannel) {
       this.pidChannel = await this.createChannel(this.queuePidName, options)
-      
-      ['error', 'close'].forEach(event => {
+
+      ;['error', 'close'].forEach(event => {
         this.pidChannel.on(event, () => {
           this.onConnectionDown()
           this.pidChannel = null
