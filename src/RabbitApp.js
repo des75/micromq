@@ -62,7 +62,6 @@ class RabbitApp {
   }
 
   async createChannel (queueName, options) {
-    console.log(" ======== START CREATE CHANNEL =========")
     const connection = await this.createConnection()
 
     try {
@@ -85,39 +84,28 @@ class RabbitApp {
   }
 
   async createResponsesChannel () {
-    console.log(" ======== START create resp channel =========")
     if (!this.responsesChannel) {
-      console.log(" ======== creating resp channel =========")
-
       this.responsesChannel = await this.createChannel(this.responsesQueueName)
       ;['error', 'close'].forEach(event => {
         this.responsesChannel.on(event, () => {
-          console.log(" ======== end of resp channel =========")
           this.onConnectionDown()
           this.responsesChannel = null
         })
       })
-    } else {
-      console.log(" ======== resp channel exists =========")
     }
 
     return this.responsesChannel
   }
 
   async createRequestsChannel () {
-    console.log(" ======== START create req channel =========")
     if (!this.requestsChannel) {
-      console.log(" ======== creating req channel =========")
       this.requestsChannel = await this.createChannel(this.requestsQueueName)
       ;['error', 'close'].forEach(event => {
         this.requestsChannel.on(event, () => {
-          console.log(" ======== end of req channel =========")
           this.onConnectionDown()
           this.requestsChannel = null
         })
       })
-    }else {
-      console.log(" ======== req channel exists =========")
     }
 
     return this.requestsChannel
