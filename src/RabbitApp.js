@@ -84,14 +84,20 @@ class RabbitApp {
   }
 
   async createResponsesChannel () {
+    console.log(" ======== START create resp channel =========")
     if (!this.responsesChannel) {
+      console.log(" ======== creating resp channel =========")
+
       this.responsesChannel = await this.createChannel(this.responsesQueueName)
       ;['error', 'close'].forEach(event => {
         this.responsesChannel.on(event, () => {
+          console.log(" ======== end of resp channel =========")
           this.onConnectionDown()
           this.responsesChannel = null
         })
       })
+    } else {
+      console.log(" ======== resp channel exists =========")
     }
 
     return this.responsesChannel
