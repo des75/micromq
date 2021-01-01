@@ -62,6 +62,7 @@ class RabbitApp {
   }
 
   async createChannel (queueName, options) {
+    console.log(" ======== START CREATE CHANNEL =========")
     const connection = await this.createConnection()
 
     try {
