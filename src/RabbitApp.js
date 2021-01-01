@@ -39,23 +39,16 @@ class RabbitApp {
     if (!this.connection) {
       debug(() => 'creating connection')
 
-      try {
-        this.connection = await amqplib.connect(this.options.rabbit.url)
+      this.connection = await amqplib.connect(this.options.rabbit.url)
 
-        debug(() => '[MicroMQ] connected')
-        this.backoff = 1000
+      debug(() => '[MicroMQ] connected')
+      this.backoff = 1000
 
-        ;['error', 'close'].forEach(event => {
-          this.connection.on(event, () => {
-            this.onConnectionDown()
-          })
-        })
-      } catch (e) {
-        setTimeout(() => {
-          this.backoff *= 2
+      ;['error', 'close'].forEach(event => {
+        this.connection.on(event, () => {
           this.onConnectionDown()
-        }, this.backoff)
-      }
+        })
+      })
     }
 
     return this.connection
@@ -64,23 +57,15 @@ class RabbitApp {
   async createChannel (queueName, options) {
     const connection = await this.createConnection()
 
-    try {
-      const channel = await connection.createChannel()
+    const channel = await connection.createChannel()
 
-      debug(() => `creating channel and asserting to ${queueName} queue`)
+    debug(() => `creating channel and asserting to ${queueName} queue`)
 
-      if (queueName) {
-        await channel.assertQueue(queueName, options)
-      }
-
-      return channel
-    } catch (e) {
-      setTimeout(() => {
-        this.backoff *= 2
-        this.createChannel(queueName, options)
-        this.onConnectionDown()
-      }, this.backoff)
+    if (queueName) {
+      await channel.assertQueue(queueName, options)
     }
+
+    return channel
   }
 
   async createResponsesChannel () {
