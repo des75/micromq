@@ -104,14 +104,19 @@ class RabbitApp {
   }
 
   async createRequestsChannel () {
+    console.log(" ======== START create req channel =========")
     if (!this.requestsChannel) {
+      console.log(" ======== creating req channel =========")
       this.requestsChannel = await this.createChannel(this.requestsQueueName)
       ;['error', 'close'].forEach(event => {
         this.requestsChannel.on(event, () => {
+          console.log(" ======== end of req channel =========")
           this.onConnectionDown()
           this.requestsChannel = null
         })
       })
+    }else {
+      console.log(" ======== req channel exists =========")
     }
 
     return this.requestsChannel
